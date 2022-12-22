@@ -1,4 +1,4 @@
-import todoModels from "../models/todoModels";
+import todoModels from "../models/todoModels.js";
 
 export const addTodo = async (req, res) => {
     try {
@@ -46,7 +46,7 @@ export const getTodoId = async (req, res) => {
         res.send({
             status: "Success",
             message: `Get Todo with ID: ${req.params.id} success`,
-            data:{
+            data: {
                 todoId
             },
         });
@@ -61,11 +61,11 @@ export const getTodoId = async (req, res) => {
 
 export const updateTodo = async (req, res) => {
     try {
-        const updatedTodo = await todoModels.updateOne({_id:req.params.id}, {$set: req.body});
+        const updatedTodo = await todoModels.updateOne({ _id: req.params.id }, { $set: req.body });
         res.send({
             status: "Success",
             message: `Updated Todo with ID: ${req.params.id} Success`,
-            data:{
+            data: {
                 updatedTodo
             }
         });
@@ -80,11 +80,11 @@ export const updateTodo = async (req, res) => {
 
 export const deleteTodo = async (req, res) => {
     try {
-        const deletedTodo = await todoModels.deleteOne({_id:req.params.id});
+        const deletedTodo = await todoModels.deleteOne({ _id: req.params.id });
         res.send({
             status: "Success",
             message: `Delete Todo with ID: ${req.params.id} Success`,
-            data:{
+            data: {
                 deletedTodo
             }
         });

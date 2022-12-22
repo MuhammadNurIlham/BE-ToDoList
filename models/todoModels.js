@@ -1,28 +1,30 @@
-import mongoose, { Schema, SchemaType } from "mongoose";
+import mongoose from "mongoose";
 
-const todo = mongoose.Schema({
-    user:{
+const Schema = mongoose.Schema;
+
+const todoSchema = new Schema({
+    user: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    category:{
+    category: {
         type: Schema.Types.ObjectId,
-        ref: 'CategoryTodo',
+        ref: 'Category',
         required: true
     },
-    title:{
+    title: {
         type: String,
         required: true
     },
-    description:{
+    description: {
         type: String,
         required: true
     },
-    status:{
+    status: {
         type: Boolean,
         default: false
     },
 });
 
-export default mongoose.model('Todos', todo);
+export default mongoose.model('Todos', todoSchema);
