@@ -1,9 +1,11 @@
 import express from "express"; //import express and initialize
 import mongoose from "mongoose"; //import mongoose and initialize
 import cors from "cors"; //import cors (Cross Origin Resource Sharing)
+
 import userRoutes from "./routes/userRoutes.js";
 import todoRoutes from "./routes/todoRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 
 // const router = require('./routes');
@@ -34,6 +36,7 @@ app.use(express.json());
 app.use('/api/v1/', userRoutes);
 app.use('/api/v1/', todoRoutes);
 app.use('/api/v1/', categoryRoutes);
+app.use('/api/v1/', authRoutes);
 
 // When this nodeJs app executed, it will listen to defined port 
 app.listen(port, () => console.log(`Server running on port ${port}!! and Happy Hacking!`));
