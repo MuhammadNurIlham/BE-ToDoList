@@ -1,6 +1,7 @@
 import userModels from "../models/userModels.js";
 import Joi from "joi";
-import bcrypt from "bcrypt";
+import bcrypt, { hash } from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export const register = async (req, res) => {
     try {
@@ -26,17 +27,21 @@ export const register = async (req, res) => {
         };
 
         // Check if email is already registered
-        const isAlready = await userModels.findOne({
-            where: {
-                email: data.email
-            }
+        const isAlready = await userModels.find({
+            email: data.email
         });
 
-        if (isAlready) {
-            return res.send({
-                error: {
-                    message: `Account with email: ${data.email} is Already`,
-                },
+        if (isAlready.length >= 1) {
+            return res.status(409).send({
+                message: `Account with email: ${data.email} is Already`,
+            });
+        } else {
+            bcrypt.hash(data.password, 10, (err, hash) => {
+                if (err) {
+                    return res.status(500).json({
+                        error: err
+                    });
+                };
             });
         };
 
@@ -57,14 +62,12 @@ export const register = async (req, res) => {
             message: "Register Success",
             newUser,
         });
+
     } catch (error) {
         console.log(error);
         res.send({
             status: "Failed",
             message: "Server Error",
-            error: {
-                message: `Account with email: ${req.body.email} is Already`
-            }
         });
     };
 };
@@ -83,53 +86,56 @@ export const login = async (req, res) => {
 
         const { error } = schema.validate(data);
 
-        if (error) {
-            return res.send({
-                error: {
-                    message: error.details[0].message,
-                },
-            });
-        };
-
         // Check if email exists in the database
-        const userExist = await userModels.findOne({
-            where: {
-                email: data.email
-            }
+        const userExist = await userModels.find({
+            email: data.email
         });
 
-        if (!userExist) {
-            return res.send({
+        if (error || userExist.length < 1) {
+            return res.status(401).send({
                 error: {
-                    message: `Email or Password not match`
+                    message: error ? error.details[0].message : `Email or Password not match`,
                 },
             });
         };
 
         // Check if password is correct
-        const isValid = await bcrypt.compare(data.password, userExist.password);
+        bcrypt.compare(data.password, userExist[0].password, (err, result) => {
+            if (err || !result) {
+                return res.status(401).send({
+                    error: {
+                        message: `Email or Password not match`
+                    },
+                });
+            };
+            if (result) {
+                // Jika password benar, buat token JWT
+                const payload = {
+                    _id: data.id,
+                    email: data.email,
+                    userName: data.userName
+                };
+                const SECRET_KEY = 'merntodolist';
+                const token = jwt.sign(payload, SECRET_KEY);
 
-        if (!isValid) {
-            return res.send({
-                error: {
-                    message: `Email or Password not match`
-                },
-            });
-        };
+                res.send({
+                    status: "Success",
+                    message: "Login Success",
+                    userAuth: {
+                        email: data.email,
+                        userName: data.userName
+                    },
+                    token,
+                });
+            }
 
-        res.send({
-            status: "Success",
-            message: "Login Success",
-            data,
         });
+
     } catch (error) {
         console.log(error);
         res.send({
             status: "Failed",
             message: "Server Error",
-            error: {
-                message: `Email or Password not match`
-            }
         });
     };
 };
