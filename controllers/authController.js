@@ -140,3 +140,37 @@ export const login = async (req, res) => {
     };
 };
 
+export const checkAuth = async(req, res) => {
+    try {
+        const id = req.user.id;
+        const dataUser = await userModels.findOne({
+            where: {
+                id,
+            },
+        });
+
+        if(!dataUser) {
+            return res.status(404).send({
+                status: "Failed",
+            });
+        };
+
+        res.send({
+            status: "Success",
+            data: {
+                user: {
+                    id: dataUser.id,
+                    name: dataUser.name,
+                    email: dataUser.email,
+                    userName: dataUser.userName
+                },
+            },
+        });
+    } catch (error) {
+        console.log(error);
+        res.send({
+            status: "Failed",
+            message: "Server Error",
+        });
+    };
+};
