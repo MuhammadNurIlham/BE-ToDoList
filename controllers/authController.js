@@ -77,6 +77,7 @@ export const login = async (req, res) => {
     try {
         res.setHeader('Content-Type', 'application/json');
         const data = req.body;
+        console.log(req.userModels);
 
         const schema = Joi.object({
             email: Joi.string().email().min(6).required(),
@@ -111,9 +112,9 @@ export const login = async (req, res) => {
             if (result) {
                 // Jika password benar, buat token JWT
                 const payload = {
-                    _id: data.id,
-                    email: data.email,
-                    userName: data.userName
+                    _id: userExist._id,
+                    email: userExist.email,
+                    userName: userExist.userName
                 };
                 const SECRET_KEY = 'merntodolist';
                 const token = jwt.sign(payload, SECRET_KEY);
@@ -125,6 +126,7 @@ export const login = async (req, res) => {
                         email: data.email,
                         userName: data.userName
                     },
+                    payload,
                     token,
                 });
             }
@@ -140,37 +142,48 @@ export const login = async (req, res) => {
     };
 };
 
-export const checkAuth = async(req, res) => {
+
+export const checkAuth = async (req, res) => {
     try {
-        const id = req.user.id;
-        const dataUser = await userModels.findOne({
+        console.log(req.userModels);
+        const data = req.userModels.email;
+        console.log(data)
+        console.log(req.body);
+        // const data1 = req.body;
+        // console.log(data);
+        // const id = req.user.id;
+        const userAuth = await userModels.find({
             where: {
-                id,
+                data,
             },
         });
+        // const dataUser = await userModels.findOne({
+        //     where: {
+        //         id,
+        //     },
+        // });
 
-        if(!dataUser) {
+        if (!userAuth) {
             return res.status(404).send({
-                status: "Failed",
+                status: "failed",
             });
-        };
+        }
 
         res.send({
             status: "Success",
-            data: {
-                user: {
-                    id: dataUser.id,
-                    name: dataUser.name,
-                    email: dataUser.email,
-                    userName: dataUser.userName
-                },
+            message: "Auth Success",
+            user:{
+                email: userAuth.email,
+                userName: userAuth.userName,
             },
         });
+
+
     } catch (error) {
         console.log(error);
-        res.send({
-            status: "Failed",
+        res.status({
+            status: "failed",
             message: "Server Error",
         });
-    };
+    }
 };
